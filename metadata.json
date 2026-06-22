@@ -1,0 +1,6 @@
+{
+  "name": "GrowSocials",
+  "description": "A modern SMM Reseller Panel to manage social media services, pricing, and orders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

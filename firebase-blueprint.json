@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "Wallet": {
+      "title": "Wallet",
+      "description": "User secure account wallet with Sandbox credit balance",
+      "type": "object",
+      "properties": {
+        "balance": {
+          "type": "number",
+          "description": "Available INR balance associated with user"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last timestamp of balance modification"
+        }
+      },
+      "required": ["balance", "updatedAt"]
+    },
+    "WalletTransaction": {
+      "title": "WalletTransaction",
+      "description": "Receipt log of simulated balance refill topup or debit charges",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the wallet owner"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The transaction amount in INR"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["credit", "debit"],
+          "description": "Whether money was credited or debited"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of transaction item"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "failed"],
+          "description": "Status of simulated payment"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of creation"
+        }
+      },
+      "required": ["userId", "amount", "type", "description", "status", "createdAt"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Administrative payment carrier configuration and wholesale settings",
+      "type": "object",
+      "properties": {
+        "upiId": {
+          "type": "string",
+          "description": "UPI address of the reseller platform"
+        },
+        "minRefill": {
+          "type": "number",
+          "description": "Minimum refill payment threshold"
+        },
+        "enableUpi": {
+          "type": "boolean",
+          "description": "Toggle UPI channel activation status"
+        },
+        "enableCard": {
+          "type": "boolean",
+          "description": "Toggle Credit/Debit card channel activation status"
+        },
+        "enableNetBanking": {
+          "type": "boolean",
+          "description": "Toggle NetBanking channel activation status"
+        },
+        "successRate": {
+          "type": "string",
+          "description": "Configurable simulated success rate descriptor"
+        },
+        "instructionCaption": {
+          "type": "string",
+          "description": "Guideline caption printed on client payment modals"
+        }
+      },
+      "required": ["upiId", "minRefill", "enableUpi", "enableCard", "enableNetBanking", "successRate", "instructionCaption"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "SMM product placement service order record",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the user who ordered the campaign"
+        },
+        "category": {
+          "type": "string",
+          "description": "Service category string matching service options"
+        },
+        "link": {
+          "type": "string",
+          "description": "The target public social URL to fulfill"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Service unit package volume multiplier"
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "Fully processed and mark-up rate SMM cost in INR"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "processing", "completed"],
+          "description": "Current status tracking of the delivery queue"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when order was launched"
+        }
+      },
+      "required": ["userId", "category", "link", "quantity", "totalPrice", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "wallets/{userId}": {
+      "schema": "Wallet",
+      "description": "Secure wallets mapping User IDs to balances"
+    },
+    "wallet_transactions/{txId}": {
+      "schema": "WalletTransaction",
+      "description": "Transactions log stream for user credit/debits"
+    },
+    "settings/payment_config": {
+      "schema": "Settings",
+      "description": "Administrative gateway parameters document"
+    },
+    "orders/{orderId}": {
+      "schema": "Order",
+      "description": "SMM orders in queue trackers mapping user orders"
+    }
+  }
+}

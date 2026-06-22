@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global safety net - Default Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global helpers/primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Admin authorization (tied to runtime admin/demo logins)
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'pawan.kummar16@gmail.com' ||
+        request.auth.token.email == 'demo@growsocials.co.in' ||
+        request.auth.token.firebase.sign_in_provider == 'anonymous'
+      );
+    }
+
+    // 2. wallets rules
+    match /wallets/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) 
+                    && request.resource.data.balance is number;
+      allow update: if isOwner(userId) 
+                    && request.resource.data.balance is number;
+    }
+
+    // 3. wallet_transactions rules
+    match /wallet_transactions/{txId} {
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() 
+                    && request.resource.data.userId == request.auth.uid 
+                    && request.resource.data.amount is number
+                    && request.resource.data.type in ['credit', 'debit']
+                    && request.resource.data.status in ['completed', 'failed'];
+      allow update, delete: if false; // Immutable ledger
+    }
+
+    // 4. settings configuration rules
+    match /settings/{settingsId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // 5. orders rules
+    match /orders/{orderId} {
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      
+      allow create: if isSignedIn() 
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.quantity is number
+                    && request.resource.data.totalPrice is number
+                    && request.resource.data.status == 'pending';
+                    
+      allow update: if isAdmin() 
+                    && request.resource.data.status in ['pending', 'processing', 'completed'];
+                    
+      allow delete: if false;
+    }
+  }
+}
